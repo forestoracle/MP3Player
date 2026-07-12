@@ -10,21 +10,20 @@
 
 //#include "fonts/verdana12.h"
 #include "PSVision/fonts/verdanab12.h"
+#include "PSVision/images/xbm_images.h"
 #include "PSVision/progressbar.h"
 #include "PSVision/label.h"
 #include "PSVision/listbox.h"
 #include "PSVision/digitalclock.h"
-#include <RTC.h>
-
-
 
 #define DEBUG      //!< Если этот макрос определён, то будет включена отладка в Serial
 #define TFT_BL 15  // Backlite
 #define FONT_VERDANA_12 verdanab12
 
+#define USER_BUTTON_PIN 24
+
 TFT_eSPI tft = TFT_eSPI();
 DigitalClock dc = DigitalClock(0, 0, 160, 128, TFT_RED, &tft);
-datetime_t t;
 
 //ProgressBar pb1 = ProgressBar(10, 1, 100, 10, 0, 100, tft);
 //ProgressBar pb2 = ProgressBar(10, 12, 100, 10, 0, 100, tft);
@@ -38,7 +37,7 @@ void printDebug(String s) {
 #endif
 }
 
-const uint USER_BUTTON_PIN = 24;
+
 /**
     @brief  Нажата ли пользовательская кнопка
 */
@@ -118,13 +117,11 @@ void setup() {
 
     dc.setTime(11, 34, 34);
     dc.setTextColor(TFT_WHITE, TFT_BLACK);
-    _rtc_init();
-    t.day = 1;
-    t.hour =12;
-    t.min = 3;
-    t.sec = 4;
-    t.year = 2026;
-    rtc_set_datetime(&t);
+
+    tft.drawXBitmap(80, 60, xbm_folder_12x12, 12, 12, TFT_WHITE);
+    tft.drawXBitmap(80, 72, xbm_folder_fat_12x12, 12, 12, TFT_WHITE);
+    tft.drawXBitmap(80, 84, xbm_file_12x12, 12, 12, TFT_WHITE);
+    tft.drawXBitmap(80, 96, xbm_file_fat_12x12, 12, 12, TFT_WHITE);
     //drawFileList();
 }
 
@@ -139,8 +136,7 @@ void loop() {
         Serial.print("\nКнопка нажата\n");
         Serial.println(dc.getTimeHH24MI());
 #endif
-        rtc_get_datetime(&t);
-        dc.setTime(t.hour, t.min, t.sec);
+        dc.setTime(12, 23, 0);
         dc.draw();
     }
     delay(200);

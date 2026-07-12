@@ -79,11 +79,11 @@ class Shape {
         if (redraw) draw();
     }
   protected:
+    uint16_t x = 0;            //!< координата X левого верхнего угла
+    uint16_t y = 0;            //!< координата Y левого верхнего угла
+    uint16_t width = 0;        //!< ширина
+    uint16_t height = 0;       //!< высота
     TFT_eSPI *display;         //!< дисплей
-    uint16_t x;                //!< координата X левого верхнего угла
-    uint16_t y;                //!< координата Y левого верхнего угла
-    uint16_t width;            //!< ширина
-    uint16_t height;           //!< высота
     uint32_t foregroundColor;  //!< цвет шрифта
     uint32_t backgroundColor;  //!< цвет фона
 };

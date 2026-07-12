@@ -1,7 +1,8 @@
 /*
 
     День недели можно показывать как названием, так и диаграммой. Примерно такой:
-    ====----- или такой ---=--- (реализовать как ProgressBar)
+    ====----- или такой ---=--- (можно реализовать как ProgressBar)
+    
 
 */
 #ifndef _DIGITALCLOCK_H
@@ -39,10 +40,6 @@ class DigitalClock : public Clock {
         @brief Прорисовка часов
     */
     void draw(void) override {
-        uint8_t r = (backgroundColor >> 11) & 0x1F;
-        uint8_t g = (backgroundColor >> 5) & 0x3F;
-        uint8_t b = backgroundColor & 0x1F;
-
         display->setViewport(x, y, width, height, true);
         // Рисуем пустые, "незажённые" ячейки индикатора
         // Здесь мы устанавдиваем текст фона, чтобы стереть текст, выведенный ранее
