@@ -107,6 +107,8 @@ class Label : public Shape {
         bitmapColor = color;
         if (redraw) draw();
     }
+
+    
   protected:
     uint16_t indentH = 1;   //!< Отступ текста от левого края
     uint16_t indentV = 1;   //!< Отступ текста от верхнего края
