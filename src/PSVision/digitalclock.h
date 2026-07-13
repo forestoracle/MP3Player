@@ -2,9 +2,14 @@
 
     День недели можно показывать как названием, так и диаграммой. Примерно такой:
     ====----- или такой ---=--- (можно реализовать как ProgressBar)
-    
 
-*/
+    Вот так это будет выглядеть:
+    - - - = - - -
+       _    _   _
+    | |_  * _|  _|
+    |  _| * _| |_
+
+зх-см=бьл34у*/
 #ifndef _DIGITALCLOCK_H
 #define _DIGITALCLOCK_H
 
@@ -36,18 +41,33 @@ class DigitalClock : public Clock {
         foregroundColor = c;
         backgroundColor = TFT_BLUE;
     }
+    // :TODO:
+    void drawDate(void) {
+    }
+
+    // :TODO:
+    void drawWeekDay(void) {
+    }
     /**
         @brief Прорисовка часов
     */
     void draw(void) override {
         display->setViewport(x, y, width, height, true);
+        // Показывать дату
+        if (showDate) {
+            // :TODO:
+        }
+        // Показывать день недели
+        if (showWeekDay) {
+            // :TODO:
+        }
         // Рисуем пустые, "незажённые" ячейки индикатора
         // Здесь мы устанавдиваем текст фона, чтобы стереть текст, выведенный ранее
-        // 0x39C4
-        // При фоне TFT_BLACK alpha должна быть больше, при светлых - меньше. Надо как-то подбирать
         display->setTextColor(display->alphaBlend(DIGITALCLOCK_ALPHA, foregroundColor, backgroundColor), backgroundColor);
         display->drawString("88:88", 0, 0, DIGITALCLOCK_FONT);
-        // Здесь мы не устанавливаем цвет фона, чтобы оставить прорисованные ранее "незажённые" ячейки
+
+        // Внимание: Здесь мы не устанавливаем цвет фона, чтобы не затереть прорисованные ранее "незажённые" ячейки.
+        // Т.е. прорисовываются только символы, а цвет фона - прозрачный.
         display->setTextColor(foregroundColor);
         display->drawString(getTimeHH24MI(), 0, 0, DIGITALCLOCK_FONT);
         display->resetViewport();
@@ -57,12 +77,14 @@ class DigitalClock : public Clock {
     */
     void setShowDate(bool d) {
         showDate = d;
+        draw();
     }
     /**
         @brief Показывать день недели
     */
     void setShowWeekDay(bool d) {
         showWeekDay = d;
+        draw();
     }
   protected:
     bool showDate;     //!< Показывать дату

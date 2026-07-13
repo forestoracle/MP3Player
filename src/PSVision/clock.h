@@ -16,8 +16,8 @@ class Clock : public Shape {
 
         @param x Координата X левого верхнего угла.
         @param y Координата Y левого верхнего угла.
-        @param w Ширина метки в пикселах.
-        @param h Высота метки в пикселах.
+        @param w Ширина в пикселах.
+        @param h Высота в пикселах.
         @param tft Ссылка на дисплей.
     */
     Clock(uint16_t x, uint16_t y, uint16_t w, uint16_t h, TFT_eSPI* tft)

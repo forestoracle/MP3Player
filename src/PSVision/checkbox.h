@@ -57,7 +57,7 @@ class Checkbox : public Label {
         @param w Ширина и высота изображений. Предполагается, что они одинаковые, т.е. изображение квадратное.
         @param color Цвет изображения.
     */
-    void setCheckImages(unsigned char* checked, unsigned char* unchecked, uint8_t w, uint16_t color) {
+    void setCheckBitmaps(unsigned char* checked, unsigned char* unchecked, uint8_t w, uint16_t color) {
         bitmapChecked = checked;
         bitmapUnchecked = unchecked;
         // Предполагается, что изображение квадратное, для чекбокса этого достаточно

@@ -7,7 +7,7 @@
 
 #include <TFT_eSPI.h>
 #include <SPI.h>
-
+#include <SD.h>
 //#include "fonts/verdana12.h"
 #include "PSVision/fonts/verdanab12.h"
 #include "PSVision/images/xbm_images.h"
@@ -21,6 +21,14 @@
 #define FONT_VERDANA_12 verdanab12
 
 #define USER_BUTTON_PIN 24
+
+/*
+    Подключение SD карты
+*/
+const int SD_MISO = 4;  // GPIO4 SPI RX
+const int SD_MOSI = 7;  // GPIO7 SPI TX
+const int SD_CS = 5;    // GPIO5 Chip Select
+const int SD_SCK = 6;   // GPIO6 Clock
 
 TFT_eSPI tft = TFT_eSPI();
 DigitalClock dc = DigitalClock(0, 0, 160, 128, TFT_RED, &tft);
@@ -94,6 +102,12 @@ void randomBars(void) {
  *  Установочный метод
  * 
 */
+#define SD_CS 22
+#define SD_MISO 20
+#define SD_MOSI 19
+#define SD_SCL 18
+bool sdInitialized = false;
+String type = "Q";
 void setup() {
 
 #ifdef DEBUG
@@ -107,6 +121,8 @@ void setup() {
 
     pinMode(USER_BUTTON_PIN, INPUT_PULLUP);  // Пользовательская кнопка
 
+    pinMode(SD_CS, OUTPUT);
+    digitalWrite(SD_CS, HIGH);  // Отключаем SD-карту на старте
 
     /*
     *  Инициализация экрана
@@ -122,9 +138,15 @@ void setup() {
     tft.drawXBitmap(80, 72, xbm_folder_fat_12x12, 12, 12, TFT_WHITE);
     tft.drawXBitmap(80, 84, xbm_file_12x12, 12, 12, TFT_WHITE);
     tft.drawXBitmap(80, 96, xbm_file_fat_12x12, 12, 12, TFT_WHITE);
+
     //drawFileList();
 }
+void cardRead(void) {
 
+    SPI.setRX(SD_MISO);
+    SPI.setTX(SD_MOSI);
+    SPI.setSCK(SD_SCK);
+}
 /********************************************************************** 
  * 
  *  Главный цикл
@@ -135,6 +157,7 @@ void loop() {
 #ifdef DEBUG
         Serial.print("\nКнопка нажата\n");
         Serial.println(dc.getTimeHH24MI());
+        cardRead();
 #endif
         dc.setTime(12, 23, 0);
         dc.draw();
