@@ -1,12 +1,12 @@
 /**
-    @bief Кириллический шриф Verdana Bold
+    @brief РЁСЂРёС„С‚ Verdana Bold РІС‹СЃРѕС‚РѕР№ 12 РїРёРєСЃРµР»РµР№
 */
 #ifndef FONT_VERDANAB_12_H
 #define FONT_VERDANAB_12_H
 //#include <pgmspace.h>
 
-/**
-    @bief Кириллический шриф Verdana Bold
+/*
+    РЁСЂРёС„С‚ Verdana Bold РІС‹СЃРѕС‚РѕР№ 12 РїРёРєСЃРµР»РµР№
 */
 const uint8_t verdanab12[] PROGMEM = {
 0x00, 0x00, 0x00, 0xE7, 0x00, 0x00, 0x00, 0x0B, 0x00, 0x00, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x00,

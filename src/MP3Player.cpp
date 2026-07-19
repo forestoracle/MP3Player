@@ -8,7 +8,6 @@
 #include <TFT_eSPI.h>
 #include <SPI.h>
 #include <SD.h>
-//#include "fonts/verdana12.h"
 #include "PSVision/fonts/verdanab12.h"
 #include "PSVision/images/xbm_images.h"
 #include "PSVision/progressbar.h"
@@ -17,97 +16,37 @@
 #include "PSVision/digitalclock.h"
 
 #define DEBUG      //!< Если этот макрос определён, то будет включена отладка в Serial
-#define TFT_BL 15  // Backlite
 #define FONT_VERDANA_12 verdanab12
 
-#define USER_BUTTON_PIN 24
+#define USER_BUTTON_PIN 24  // Пин пользовательской кнопки
 
 /*
-    Подключение SD карты
+    Подключение SD карты к SPI1
 */
-const int SD_MISO = 4;  // GPIO4 SPI RX
-const int SD_MOSI = 7;  // GPIO7 SPI TX
-const int SD_CS = 5;    // GPIO5 Chip Select
-const int SD_SCK = 6;   // GPIO6 Clock
+const pin_size_t SD_MISO = 12;  // GPIO12 SPI1 RX
+const pin_size_t SD_CS = 13;    // GPIO13 SPI1 Chip Select
+const pin_size_t SD_SCK = 14;   // GPIO14 SPI1 Clock
+const pin_size_t SD_MOSI = 15;  // GPIO15 SPI1 TX
+
+bool sdInitialized = false;  // SD-карта проинициализирована
 
 TFT_eSPI tft = TFT_eSPI();
 DigitalClock dc = DigitalClock(0, 0, 160, 128, TFT_RED, &tft);
+File root;
 
-//ProgressBar pb1 = ProgressBar(10, 1, 100, 10, 0, 100, tft);
-//ProgressBar pb2 = ProgressBar(10, 12, 100, 10, 0, 100, tft);
-//ProgressBar pb3 = ProgressBar(10, 24, 100, 10, 0, 100, tft);
-//ProgressBar pb4 = ProgressBar(10, 36, 100, 10, 0, 100, tft);
-//ProgressBar pb5 = ProgressBar(10, 48, 100, 10, 0, 100, tft);
-
-void printDebug(String s) {
-#ifdef DEBUG
-    Serial.println(s);
-#endif
-}
-
-
-/**
-    @brief  Нажата ли пользовательская кнопка
-*/
-bool userButtonPressed(void) {
-    return digitalRead(USER_BUTTON_PIN) == LOW;
-}
 /*
-    Прорисока списка
+    Прототипы функций
 */
-void drawFileList() {
-    //tft.loadFont(verdanab12);
-    Listbox lb = Listbox(0, 0, tft.width(), tft.height(), &tft);
-    for (uint16_t s = 0; s < 100; s++) {
-        lb.addListItem(String(s));
-    }
-    lb.setHeaderColor(TFT_BLUE, TFT_WHITE, false);
-    lb.setFooterColor(TFT_WHITE, TFT_BLUE, false);
-    lb.setHeaderText("Заголовок 1", false);
-    lb.setFooterText("Подвал 1", false);
-    lb.setLineColor(TFT_BLACK, TFT_DARKGREY);
-    lb.setSelectedColor(TFT_WHITE, TFT_BLUE);
-    lb.draw();
-    // Тест
-    for (uint16_t i = 0; i < 15; i++) {
-        delay(500);
-        lb.selectNext();
-    }
-    for (uint16_t i = 0; i < 16; i++) {
-        delay(500);
-        lb.selectPrior();
-    }
-    for (uint16_t i = 0; i < 15; i++) {
-        delay(500);
-        lb.selectNext();
-    }
-    lb.selectFirst();
-    delay(1000);
-    lb.selectLast();
-    //tft.unloadFont();
-}
-
-void randomBars(void) {
-    /*
-    pb1.setValue(random(100));
-    pb2.setValue(random(100));
-    pb3.setValue(random(100));
-    pb4.setValue(random(100));
-    pb5.setValue(random(100));
-    */
-}  // randomBars
-
+void splashScreen(String s1, String s2, uint32_t foregroundColor, uint32_t backgroundColor);
+bool userButtonPressed(void);
+bool initSDCard(void);
+void drawFileList();
+void printDebug(String s);
 /********************************************************************** 
  * 
  *  Установочный метод
  * 
 */
-#define SD_CS 22
-#define SD_MISO 20
-#define SD_MOSI 19
-#define SD_SCL 18
-bool sdInitialized = false;
-String type = "Q";
 void setup() {
 
 #ifdef DEBUG
@@ -115,14 +54,13 @@ void setup() {
       Включение отладки
     */
     Serial.begin(115200);
+    delay(5000);  // Это для того, чтобы монитор успел запуститься
 #endif
-
+    printDebug("Вход в setup");
     printDebug("\nRasberry Pi Pico MP3 Player\n");
 
     pinMode(USER_BUTTON_PIN, INPUT_PULLUP);  // Пользовательская кнопка
 
-    pinMode(SD_CS, OUTPUT);
-    digitalWrite(SD_CS, HIGH);  // Отключаем SD-карту на старте
 
     /*
     *  Инициализация экрана
@@ -130,23 +68,19 @@ void setup() {
     tft.init();
     tft.setRotation(3);
     tft.fillScreen(TFT_BLACK);
-
-    dc.setTime(11, 34, 34);
-    dc.setTextColor(TFT_WHITE, TFT_BLACK);
-
-    tft.drawXBitmap(80, 60, xbm_folder_12x12, 12, 12, TFT_WHITE);
-    tft.drawXBitmap(80, 72, xbm_folder_fat_12x12, 12, 12, TFT_WHITE);
-    tft.drawXBitmap(80, 84, xbm_file_12x12, 12, 12, TFT_WHITE);
-    tft.drawXBitmap(80, 96, xbm_file_fat_12x12, 12, 12, TFT_WHITE);
-
-    //drawFileList();
-}
-void cardRead(void) {
-
-    SPI.setRX(SD_MISO);
-    SPI.setTX(SD_MOSI);
-    SPI.setSCK(SD_SCK);
-}
+    /*
+        Инициализация SD-карты
+    */
+    splashScreen("Инициализация", "SD-карты.", TFT_WHITE, TFT_BLUE);
+    sdInitialized = initSDCard();
+    if (!sdInitialized) {
+        splashScreen("SD-карта", "НЕ инициализирована.", TFT_WHITE, TFT_RED);
+    } else {
+        splashScreen("SD-карта", "инициализирована.", TFT_WHITE, TFT_RED);
+    }
+    drawFileList();
+    printDebug("Выход из setup");
+}  // setup
 /********************************************************************** 
  * 
  *  Главный цикл
@@ -154,13 +88,112 @@ void cardRead(void) {
 */
 void loop() {
     if (userButtonPressed()) {
-#ifdef DEBUG
-        Serial.print("\nКнопка нажата\n");
-        Serial.println(dc.getTimeHH24MI());
-        cardRead();
-#endif
-        dc.setTime(12, 23, 0);
-        dc.draw();
+        printDebug("\nКнопка нажата\n");
     }
     delay(200);
+}  // loop
+
+/**
+    @brief  Нажата ли пользовательская кнопка
+*/
+bool userButtonPressed(void) {
+    return digitalRead(USER_BUTTON_PIN) == LOW;
+}  // userButtonPressed
+
+/**
+    @brief Экран с сообщением.
+*/
+void splashScreen(String s1, String s2, uint32_t foregroundColor, uint32_t backgroundColor) {
+    tft.fillScreen(backgroundColor);
+    tft.loadFont(FONT_VERDANA_12);
+    Label l1(0, 50, 160, 15, s1, &tft);
+    l1.setTextColor(foregroundColor, backgroundColor, false);
+    l1.setAlign(alCenter);
+    Label l2(0, 65, 160, 15, s2, &tft);
+    l2.setTextColor(foregroundColor, backgroundColor, false);
+    l2.setAlign(alCenter);
+    tft.unloadFont();
+} // splashScreen
+
+void printDirectory(File dir, int numTabs) {
+    while (true) {
+
+        File entry = dir.openNextFile();
+        if (!entry) {
+            // no more files
+            break;
+        }
+        for (int i = 0; i < numTabs; i++) {
+            Serial.print('\t');
+        }
+        Serial.print(entry.name());
+        if (entry.isDirectory()) {
+            Serial.println("/");
+            printDirectory(entry, numTabs + 1);
+        } else {
+            // files have sizes, directories do not
+            Serial.print("\t\t");
+            Serial.print(entry.size(), DEC);
+            time_t cr = entry.getCreationTime();
+            time_t lw = entry.getLastWrite();
+            struct tm tmstruct;
+            localtime_r(&cr, &tmstruct);
+            Serial.printf("\tCREATION: %d-%02d-%02d %02d:%02d:%02d", (tmstruct.tm_year) + 1900, (tmstruct.tm_mon) + 1, tmstruct.tm_mday, tmstruct.tm_hour, tmstruct.tm_min, tmstruct.tm_sec);
+            localtime_r(&lw, &tmstruct);
+            Serial.printf("\tLAST WRITE: %d-%02d-%02d %02d:%02d:%02d\n", (tmstruct.tm_year) + 1900, (tmstruct.tm_mon) + 1, tmstruct.tm_mday, tmstruct.tm_hour, tmstruct.tm_min, tmstruct.tm_sec);
+        }
+        entry.close();
+    }
+}
+/*
+    Инициализация шины SPI1 для SD-карты
+*/
+void initSPI1(void) {
+    SPI1.setRX(SD_MISO);
+    SPI1.setTX(SD_MOSI);
+    SPI1.setSCK(SD_SCK);
+}  // initSPI1
+/*
+    Инициализация SD-карты.
+*/
+bool initSDCard(void) {
+    initSPI1();
+    if (!SD.begin(SD_CS, SPI1)) {
+        return false;
+    }
+    return true;
+}
+
+/*
+    Прорисока списка
+*/
+void drawFileList() {
+    tft.loadFont(verdanab12);
+    Listbox lb = Listbox(0, 0, tft.width(), tft.height(), &tft);
+    lb.setHeaderColor(TFT_BLUE, TFT_WHITE, false);
+    lb.setFooterColor(TFT_WHITE, TFT_BLUE, false);
+    lb.setHeaderText("/", false);
+    lb.setFooterText("Подвал 1", false);
+    lb.setLineColor(TFT_BLACK, TFT_DARKGREY);
+    lb.setSelectedColor(TFT_WHITE, TFT_BLUE);
+    
+    root = SD.open("/");
+    while (true) {
+        File entry = root.openNextFile();
+        if (!entry) {
+            // нет больше файлов
+            break;
+        }
+        if (entry.isDirectory()) {
+            lb.addListItem(String(entry.name()));
+        }    
+    }
+    lb.draw();
+    tft.unloadFont();
+}
+
+void printDebug(String s) {
+#ifdef DEBUG
+    Serial.println(s);
+#endif
 }

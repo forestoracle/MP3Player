@@ -17,6 +17,12 @@
 
     Простая текстовая метка с возможностью вывода иконки слева от текста.
 */
+enum Align {
+    alLeft,
+    alRight,
+    alCenter
+};
+
 class Label : public Shape {
   public:
     /**
@@ -56,7 +62,6 @@ class Label : public Shape {
         display->setViewport(x, y, width, height, true);          // Окно элемента
         display->setTextPadding(width);                           // Строка будет заполнена цветом фона на ширину width. .
         display->setTextColor(foregroundColor, backgroundColor);  // Установка цвета букв и фона
-        //display->fillRect(0, 0, width, height, backgroundColor);
         if (bitmap != nullptr) {
             // иконка
             display->drawXBitmap(1, 0, bitmap, bitmapWidth, bitmapHeight, bitmapColor);
@@ -64,7 +69,20 @@ class Label : public Shape {
             // прорисовка строки внутри окна со сдвигом на ширину иконки
         } else {
             // прорисовка строки внутри окна
-            display->drawString(text, indentH, indentV);
+            uint32_t iH = indentH;
+            switch (align) {
+                case alCenter:
+                    iH = width / 2;
+                    display->setTextDatum(TC_DATUM);
+                    break;
+                case alRight:
+                    iH = width - display->textWidth(text);
+                    break;
+                default:
+                    break;
+            }
+            display->drawString(text, iH, indentV);
+            display->setTextDatum(TL_DATUM);
         }
         display->frameViewport(backgroundColor, 1);  // заполним рамку фоновым цветом
         display->resetViewport();                    // сброс окна
@@ -107,8 +125,15 @@ class Label : public Shape {
         bitmapColor = color;
         if (redraw) draw();
     }
-
-    
+    /**
+        @brief Установка выравнивания текста
+        @param a Выравнивание. 
+        @param redraw Перерисовывать метку.
+    */
+    void setAlign(Align a, bool redraw = true) {
+        align = a;
+        if (redraw) draw();
+    };
   protected:
     uint16_t indentH = 1;   //!< Отступ текста от левого края
     uint16_t indentV = 1;   //!< Отступ текста от верхнего края
@@ -117,5 +142,6 @@ class Label : public Shape {
     uint32_t bitmapColor;   //!< Цвет иконки.
     uint16_t bitmapWidth;   //!< Ширина иконки.
     uint16_t bitmapHeight;  //!< Высота иконки.
+    Align align = alLeft;   //!< Выравнивание текста
 };
 #endif

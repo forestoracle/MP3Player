@@ -33,8 +33,7 @@ class Listbox : public Shape {
           header(0, 0, width, tft->fontHeight(), "", display),
           footer(0, y + height - tft->fontHeight() - 1, width, tft->fontHeight(), "", display) {
         createLines();
-        tft->loadFont(verdanab12);
-        tft->fillScreen(TFT_BLACK);
+        //tft->loadFont(verdanab12);
     }
     /**
         @brief Деструктор списка
@@ -49,9 +48,11 @@ class Listbox : public Shape {
         @brief Полная прорисовка списка
     */
     void draw(void) override {
+        //display->loadFont(verdanab12);
         header.draw();
         footer.draw();
         drawLines();
+        //display->unloadFont();
     }
     /**
         @brief Установка цветов заголовка списка.
@@ -227,6 +228,10 @@ class Listbox : public Shape {
         }
     }
 
+    Label* getLine(uint16_t index) {
+        if (index > lines.size() - 1) return nullptr;
+        return &(lines[index]);
+    }    
   private:
     uint16_t firstItem = 0;       //!< индекс элемента, показанного в первой строке
     uint16_t itemIndex = 0xFFFF;  //!< индекс выбранного элемента
