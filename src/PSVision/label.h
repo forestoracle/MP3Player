@@ -1,5 +1,7 @@
-/*
-    Простая текстовая метка
+/**
+    @brief Текстовая метка
+
+    Простая текстовая метка с возможностью вывода иконки слева от текста.
 */
 
 #ifndef LABEL_H
@@ -7,20 +9,18 @@
 
 #include "hardware/sync.h"
 #include "hardware/address_mapped.h"
-#include "fonts/verdanab12.h"  // надо переделать, чтобы не зависеть от конкретной папки
+#include "fonts/verdanab12.h"  // надо переделать, чтобы не зависеть от конкретной папки и шрифта
 #include <stdint.h>
 
 #include <TFT_eSPI.h>
 #include "shape.h"
 /**
-    @brief Текстовая метка
-
-    Простая текстовая метка с возможностью вывода иконки слева от текста.
+    @brief Выравнивание текста внутри метки
 */
 enum Align {
-    alLeft,
-    alRight,
-    alCenter
+    alLeft,  // По левому краю
+    alRight, // По правому краю
+    alCenter // По центру
 };
 
 class Label : public Shape {
