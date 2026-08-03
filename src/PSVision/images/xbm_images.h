@@ -5,7 +5,7 @@
 
     Онлайн-конвертор изображений в формат XBM https://www.online-utility.org/image/convert/to/XBM
 
-    Ошлайн-редактор изображений в формат XBM https://www.lddgo.net/en/string/xbm-editor 
+    Онлайн-редактор изображений в формат XBM https://www.lddgo.net/en/string/xbm-editor 
     (при генерации данных нужно выбрать Endian = Little Endian)
 */
 #ifndef XBM_IMAGES_H
