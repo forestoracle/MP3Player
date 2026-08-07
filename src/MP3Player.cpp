@@ -176,8 +176,8 @@ void setup() {
         delay(1000);
         tda.setVolume(1, 1);
         tda.setInput(1, 5, false);
-        tda.setAttenuation_LF(64 + 1, 0);    
-        tda.setAttenuation_RF(64 + 1, 0);
+        tda.setAttenuationLeftFront(64 + 1, 0);    
+        tda.setAttenuationRightFront(64 + 1, 0);
         tda.setSoftMute(1, 0, 0, 0, 0); 
     }
 
